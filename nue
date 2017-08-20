@@ -1,0 +1,146 @@
+#!/usr/bin/php –d memory_limit=512M
+
+<?php 
+
+/**
+ * Nue command line tool for nue-framework
+ *
+ * Author: damianbal 
+ */
+
+/**
+ * NueClassGenerator
+ * All commands should implement this class
+ */
+abstract class NueClassGenerator 
+{
+    protected $file  = null;
+    protected $data = "";
+
+    abstract public function generate($name);
+
+    public function save($file)
+    {
+        $this->file = fopen($file, "w");        
+        fwrite($this->file, $this->data);
+    }
+}
+
+/**
+ * CommandNotFound
+ */
+class CommandNotFound extends NueClassGenerator
+{
+    public $command = "";
+
+    public function generate($name)
+    {
+        echo "- Command not found: " . $this->command . "\n";        
+    }
+}
+
+/**
+ * ControllerClassGenerator
+ * Generates controller class
+ */
+class ControllerClassGenerator extends NueClassGenerator
+{
+    public function generate($name) 
+    {
+        $cname = $name . "Controller";
+        $content = "<?php namespace App\Controllers;
+
+class $cname extends Controller 
+{
+    //
+}";
+
+        $this->data = $content;
+        $this->save("app/controllers/" . $cname . ".php");
+    }
+}
+
+/**
+ * ModelClassGenerator
+ * Generates model class with provided table
+ */
+class ModelClassGenerator extends NueClassGenerator
+{
+    public $table_name = "";
+
+    public function generate($name) 
+    {
+        $content = "<?php namespace App\Models;
+
+class $name extends \Core\Model
+{
+    public static $"."table = '$this->table_name';    
+}";
+
+        $this->data = $content;
+        $this->save("app/models/" . $name . ".php");
+    }
+}
+
+/**
+ * MiddlewareClassGenerator
+ * Generates middleware class
+ */
+class MiddlewareClassGenerator extends NueClassGenerator
+{
+    public function generate($name) 
+    {
+        $content = "<?php namespace App\Middleware;
+        
+class $name extends \Core\Middleware
+{
+    public function run() : bool
+    {
+        return true;
+    }
+}";
+
+        $this->data = $content;
+        $this->save("app/middleware/" . $name . ".php");
+    }
+}
+
+/**
+ *
+ */
+$command      = $argv[1]; // command name
+$name         = $argv[2]; // name of resource
+
+/**
+ * Create not found command in case unknown command is called
+ */
+$classGen = new CommandNotFound();
+$classGen->command = $command;
+
+/**
+ * Run command
+ */
+if($command == "add:controller") // add:controller CONTROLLER_NAME (without Controller in it!)
+{
+    $classGen = new ControllerClassGenerator();
+}
+else if($command == "add:model") // add:model MODEL_CLASS_NAME TABLE_NAME
+{
+    $classGen = new ModelClassGenerator();
+    $classGen->table_name = $argv[3];
+}
+else if($command == "add:middleware") // add:model MIDDLEWARE_NAME 
+{
+    $classGen = new MiddlewareClassGenerator();
+}
+
+/**
+ * Generate output
+ */
+$classGen->generate($name);
+
+
+/**
+ * Exit app
+ */
+exit();

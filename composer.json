@@ -1,0 +1,21 @@
+{
+    "name": "damianbal/nue",
+    "description": "Very light PHP framework for building simple web apps",
+    "type": "project",
+    "require": {
+        "twig/twig": "^2.4",
+        "gabordemooij/redbean": "^4.3"
+    },
+    "authors": [
+        {
+            "name": "Damian B",
+            "email": "30745231+damianbal@users.noreply.github.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Core\\": "core/"
+        }
+    }
+}
